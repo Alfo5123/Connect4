@@ -6,6 +6,8 @@
 from Tkinter import *
 import tkFont 
 
+import random
+
 ## GUI Configuration
 
 class Info(Frame):
@@ -38,16 +40,18 @@ class Board(object):
     def __init__(self, board ):
     	self.board = board 
 
-    def makeMove(self, move):
+    def tryMove(self, move):
     	# Takes the current board and a possible move specified 
     	# by the column. Returns the appropiate row where the 
     	# piece and be located. If it's not found it returns -1.
 
-    	if ( move < 0 or move > 7 or self.board[0][move] != 0 ) return -1 ;
+    	if ( move < 0 or move > 7 or self.board[0][move] != 0 ):
+    		return -1 ;
+
     	for i in range(len(self.board)):
     		if ( self.board[i][move] != 0 ):
     			return i-1
-    	return len(board)-1
+    	return len(self.board)-1
 
     def terminal(self):
        # Returns true when the game is finished
@@ -58,7 +62,7 @@ class Board(object):
        			empty = empty + 1 
         return empty==0
 
-    def legal_plays(self):
+    def legal_moves(self):
         # Takes a sequence of game states representing the full
         # game history, and returns the full list of moves that
         # are legal plays for the current player.
@@ -129,8 +133,6 @@ class Terrain(Canvas):
         Canvas.__init__(self)
         self.configure(width=500, height=400, bg="blue")
 
-        self.turn = 1
-        self.color = "yellow"
         self.p = []
         self.winner = False
 
@@ -153,48 +155,22 @@ class Terrain(Canvas):
         self.bind("<Button-1>", self.action)
 
     def action(self, event):
+
+    	# Human Action
         if not self.winner:
             col = int(event.x/71)
-            lig = 0
             ok = False 
+            row = self.b.tryMove( col )
 
-            lig = 0
-            while lig < len(self.p):            
-                if self.p[0][col].color == "red" or self.p[0][col].color == "yellow":
-                    break
-                
-                if self.p[lig][col].color == "red" or self.p[lig][col].color == "yellow":
-                    self.p[lig-1][col].setColor(self.color)
-                    if ( self.color == "yellow"):
-                    	self.b.board[lig-1][col] = -1
-                    elif ( self.color == "red"):
-                    	self.b.board[lig-1][col] = 1
-                    ok = True
-                    break
-                
-                elif lig == len(self.p)-1:
-                    self.p[lig][col].setColor(self.color)
-                    if ( self.color == "yellow"):
-                    	self.b.board[lig][col] = -1
-                    elif ( self.color == "red"):
-                    	self.b.board[lig][col] = 1
-                    ok = True
-                    break
+            if row == -1:
+            	return 
+            else:
+            	self.p[row][col].setColor("yellow")
+                self.b.board[row][col] = -1
+            	ok = True
 
-                if self.p[lig][col].color != "red" and self.p[lig][col].color != "yellow":
-                    lig+=1
-
-            
-            if self.turn == 1 and ok:
-                self.turn = 2
-                info.t.config(text="Computer's Turn")
-                self.color = "red"
-
-
-            elif self.turn == 2 and ok:
-                self.turn = 1
-                info.t.config(text="Your turn")
-                self.color = "yellow"
+            if ok:
+	            info.t.config(text="Computer's Turn")
 
             result = self.b.winner()
 
@@ -208,7 +184,34 @@ class Terrain(Canvas):
             elif self.b.terminal():
             	info.t.config(text="Draw")
             	self.winner = True 
-           
+
+        # Computer Action 	
+        if not self.winner:
+
+        	moves = self.b.legal_moves()
+        	ind = random.randint(0,len(moves)-1)
+        	row = self.b.tryMove(moves[ind])
+
+        	if row != -1: 
+        		self.p[row][moves[ind]].setColor("red")
+        		self.b.board[row][moves[ind]] = 1 
+        		ok = True
+
+        	if ok:
+        		info.t.config(text="Your turn")
+
+        	result = self.b.winner()
+
+        	if result == 1 :
+        		info.t.config(text="You lost!")
+        		self.winner = True
+        	elif result == -1:
+        		info.t.config(text="You won!")
+        		self.winner = 1
+        	elif self.b.terminal():
+        		info.t.config(text="Draw")
+        		self.winner = True
+
 
 
 if __name__ == "__main__":
