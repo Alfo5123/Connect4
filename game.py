@@ -6,36 +6,13 @@
 from Tkinter import *
 import tkFont 
 import random
-
-## GUI Configuration
-
-class Info(Frame):
-	## Message in the top of screen
-    def __init__(self, master=None):
-        Frame.__init__(self)
-        self.configure(width=500, height=100, bg="white")
-        police = tkFont.Font(family="Arial",size=36,weight="bold") 
-        self.t = Label(self, text="Connect4 AI", font=police, bg ="white")
-        self.t.grid(sticky=NSEW, pady=20)
-
-class Point(object):
-	## Each one of the circles in the board
-    def __init__(self, x, y, canvas, color="white"):
-        self.canvas = canvas
-        self.x = x
-        self.y = y
-        self.color = color
-        self.turn = 1
-        self.r = 30
-        self.point = self.canvas.create_oval(self.x+10,self.y+10,self.x+61,self.y+61,fill=color,outline="blue")
-
-    def setColor(self, color):
-        self.canvas.itemconfigure(self.point, fill=color)
-        self.color = color
+import math
+import copy
 
 
+## Game basic dynamics
 class Board(object):
-	## Game basic dynamics
+	
     def __init__(self, board ):
     	self.board = board 
 
@@ -71,6 +48,15 @@ class Board(object):
         		legal.append(i)
 
         return legal
+
+    def next_state(self,turn):
+		aux = copy.deepcopy ( self ) 
+		moves = aux.legal_moves()
+		if len(moves)>0:
+			ind = random.randint(0,len(moves)-1)
+			row = aux.tryMove(moves[ind])
+			aux.board[row][moves[ind]] = turn
+		return aux
 
     def winner(self):
         # Takes the board as input and determines if there is a winner.
@@ -123,6 +109,109 @@ class Board(object):
 	        i += 1
 
 	    return 0
+
+
+## Monte Carlo Tree Search
+
+# Data structure to keep track of our search
+class Node():
+
+	def __init__(self, state, parent = None):
+		self.visits = 1 
+		self.reward = 0.0
+		self.state = state
+		self.children = []
+		self.parent = parent 
+
+	def addChild( self , child_state ):
+		child = Node(child_state,self)
+		self.children.append(child)
+
+	def update( self,reward ):
+		self.reward += reward 
+		self.visits += 1
+
+	def fully_explored(self):
+		if len(self.children) == len(self.state.legal_moves()):
+			return True
+		return False
+
+def MTCS( maxIter , root , factor ):
+	for inter in range(maxIter):
+		front, turn = treePolicy( root , 1 , factor )
+		reward = defaultPolicy(front.state, turn)
+		backup(front,reward)
+	return BestChild(root,0)
+
+
+def treePolicy( node, turn , factor ):
+	while node.state.terminal() == False and node.state.winner() == 0:
+		if ( node.fully_explored() == False ):
+			return expand(node, turn), -turn
+		else:
+			node = BestChild ( node , factor )
+			turn *= -1
+	return node, turn
+
+def expand( node, turn ):
+	tried_children = [c.state for c in node.children]
+	new_state = node.state.next_state( turn )
+	while new_state in tried_children:
+		new_state = node.state.next_state( turn )
+	node.addChild(new_state)
+	return node.children[-1]
+
+def BestChild(node,factor):
+	bestscore = -10000000.0
+	bestchildren = []
+	for c in node.children:
+		exploit = c.reward / c.visits
+		explore = math.sqrt(math.log(2*node.visits)/float(c.visits))
+		score = exploit + factor*explore
+		if score == bestscore:
+			bestchildren.append(c)
+		if score > bestscore:
+			bestchildren = [c]
+			bestscore = score 
+	return random.choice(bestchildren)
+
+def defaultPolicy( state, turn  ):
+	while state.terminal()==False and state.winner() == 0 :
+		state = state.next_state( turn )
+		turn *= -1
+	return state.winner()
+
+def backup( node , reward ):
+	while node != None:
+		node.visits += 1 
+		node.reward += reward
+		node = node.parent
+	return
+
+## GUI Configuration
+class Info(Frame):
+	## Message in the top of screen
+    def __init__(self, master=None):
+        Frame.__init__(self)
+        self.configure(width=500, height=100, bg="white")
+        police = tkFont.Font(family="Arial",size=36,weight="bold") 
+        self.t = Label(self, text="Connect4 AI", font=police, bg ="white")
+        self.t.grid(sticky=NSEW, pady=20)
+
+class Point(object):
+	## Each one of the circles in the board
+    def __init__(self, x, y, canvas, color="white"):
+        self.canvas = canvas
+        self.x = x
+        self.y = y
+        self.color = color
+        self.turn = 1
+        self.r = 30
+        self.point = self.canvas.create_oval(self.x+10,self.y+10,self.x+61,self.y+61,fill=color,outline="blue")
+
+    def setColor(self, color):
+        self.canvas.itemconfigure(self.point, fill=color)
+        self.color = color
 
 
 class Terrain(Canvas):
@@ -188,14 +277,25 @@ class Terrain(Canvas):
         if not self.winner:
 
         	#Pick random move
-        	moves = self.b.legal_moves()
-        	ind = random.randint(0,len(moves)-1)
-        	row = self.b.tryMove(moves[ind])
+        	#moves = self.b.legal_moves()
+        	#ind = random.randint(0,len(moves)-1)
+        	#row = self.b.tryMove(moves[ind])
 
-        	if row != -1: 
-        		self.p[row][moves[ind]].setColor("red")
-        		self.b.board[row][moves[ind]] = 1 
-        		ok = True
+        	#if row != -1: 
+        	#	self.p[row][moves[ind]].setColor("red")
+        	#	self.b.board[row][moves[ind]] = 1 
+        	#	ok = True
+
+        	o = Node(self.b)
+        	bestMove = MTCS( 1000 , o, 0.707 )
+        	self.b = copy.deepcopy( bestMove.state )
+        	for i in range(6):
+        		for j in range(7):
+        			if self.b.board[i][j] == -1:
+        				self.p[i][j].setColor("yellow")
+        			elif self.b.board[i][j] == 1:
+        				self.p[i][j].setColor("red")
+        	ok = True
 
         	if ok:
         		info.t.config(text="Your turn")
