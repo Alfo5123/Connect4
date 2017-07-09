@@ -5,7 +5,6 @@
 ## GUI Toolkit
 from Tkinter import *
 import tkFont 
-
 import random
 
 ## GUI Configuration
@@ -188,6 +187,7 @@ class Terrain(Canvas):
         # Computer Action 	
         if not self.winner:
 
+        	#Pick random move
         	moves = self.b.legal_moves()
         	ind = random.randint(0,len(moves)-1)
         	row = self.b.tryMove(moves[ind])
@@ -220,8 +220,8 @@ if __name__ == "__main__":
 	root.geometry("500x550")
 	root.title("Connect 4 AI Bot")
 	root.configure(bg="white")
-	root.minsize(500,550)
-	root.maxsize(500,550)
+	root.minsize(500,600)
+	root.maxsize(500,600)
 
 	info = Info(root)
 	info.grid(row=0, column=0)
@@ -240,6 +240,10 @@ if __name__ == "__main__":
 	    t = Terrain(root)
 	    t.grid(row=1, column=0)
 
+	def close():
+		root.destroy()
+
 	Button(root, text="Try again (?)", command=restart).grid(row=2, column=0, pady=15)
+	Button(root, text = "Exit", command = close).grid(row=3,column = 0, pady = 5)
 
 	root.mainloop()
