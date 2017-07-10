@@ -255,7 +255,7 @@ class Terrain(Canvas):
     def findBestMove(self):
 
     	o = Node(self.b)
-        bestMove = MTCS( 1000 , o, 0.707 )
+        bestMove = MTCS( 1500 , o, 0.707 )
         self.b = copy.deepcopy( bestMove.state )
 
         for i in range(6):
