@@ -8,6 +8,7 @@ import tkFont
 import random
 import math
 import copy
+import time
 
 
 ## Game basic dynamics
@@ -121,11 +122,13 @@ class Node():
 		self.reward = 0.0
 		self.state = state
 		self.children = []
+		self.children_move = []
 		self.parent = parent 
 
-	def addChild( self , child_state ):
+	def addChild( self , child_state , move ):
 		child = Node(child_state,self)
 		self.children.append(child)
+		self.children_move.append(move)
 
 	def update( self,reward ):
 		self.reward += reward 
@@ -154,11 +157,18 @@ def treePolicy( node, turn , factor ):
 	return node, turn
 
 def expand( node, turn ):
-	tried_children = [c.state for c in node.children]
-	new_state = node.state.next_state( turn )
-	while new_state in tried_children:
-		new_state = node.state.next_state( turn )
-	node.addChild(new_state)
+	tried_children_move = [m for m in node.children_move]
+	possible_moves = node.state.legal_moves()
+
+	for i in range(len(possible_moves)):
+		if possible_moves[i] not in tried_children_move:
+			move = possible_moves[i]
+			row = node.state.tryMove(move)
+			new_state = copy.deepcopy(node.state)
+			new_state.board[row][move] = turn 
+			break
+
+	node.addChild(new_state,move)
 	return node.children[-1]
 
 def BestChild(node,factor):
@@ -242,6 +252,19 @@ class Terrain(Canvas):
         
         self.bind("<Button-1>", self.action)
 
+    def findBestMove(self):
+
+    	o = Node(self.b)
+        bestMove = MTCS( 1000 , o, 0.707 )
+        self.b = copy.deepcopy( bestMove.state )
+
+        for i in range(6):
+        	for j in range(7):
+        		if self.b.board[i][j] == -1:
+        			self.p[i][j].setColor("yellow")
+        		elif self.b.board[i][j] == 1:
+        			self.p[i][j].setColor("red")
+
     def action(self, event):
 
     	# Human Action
@@ -276,25 +299,8 @@ class Terrain(Canvas):
         # Computer Action 	
         if not self.winner:
 
-        	#Pick random move
-        	#moves = self.b.legal_moves()
-        	#ind = random.randint(0,len(moves)-1)
-        	#row = self.b.tryMove(moves[ind])
+        	self.findBestMove()
 
-        	#if row != -1: 
-        	#	self.p[row][moves[ind]].setColor("red")
-        	#	self.b.board[row][moves[ind]] = 1 
-        	#	ok = True
-
-        	o = Node(self.b)
-        	bestMove = MTCS( 1000 , o, 0.707 )
-        	self.b = copy.deepcopy( bestMove.state )
-        	for i in range(6):
-        		for j in range(7):
-        			if self.b.board[i][j] == -1:
-        				self.p[i][j].setColor("yellow")
-        			elif self.b.board[i][j] == 1:
-        				self.p[i][j].setColor("red")
         	ok = True
 
         	if ok:
