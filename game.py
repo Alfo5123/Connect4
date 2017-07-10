@@ -90,7 +90,7 @@ class Board(object):
 	    i = 0
 	    while(i < 3):
 	        j = 0
-	        while(j < 3):
+	        while(j < 4):
 	            if(self.board[i][j] == self.board[i+1][j+1] == self.board[i+2][j+2] == self.board[i+3][j+3] == 1):
 	                return 1
 	            elif(self.board[i][j] == self.board[i+1][j+1] == self.board[i+2][j+2] == self.board[i+3][j+3] == -1):
@@ -160,9 +160,8 @@ def expand( node, turn ):
 	tried_children_move = [m for m in node.children_move]
 	possible_moves = node.state.legal_moves()
 
-	for i in range(len(possible_moves)):
-		if possible_moves[i] not in tried_children_move:
-			move = possible_moves[i]
+	for move in possible_moves:
+		if move not in tried_children_move:
 			row = node.state.tryMove(move)
 			new_state = copy.deepcopy(node.state)
 			new_state.board[row][move] = turn 
@@ -176,7 +175,7 @@ def BestChild(node,factor):
 	bestchildren = []
 	for c in node.children:
 		exploit = c.reward / c.visits
-		explore = math.sqrt(math.log(2*node.visits)/float(c.visits))
+		explore = math.sqrt(math.log(2.0*node.visits)/float(c.visits))
 		score = exploit + factor*explore
 		if score == bestscore:
 			bestchildren.append(c)
@@ -252,10 +251,10 @@ class Terrain(Canvas):
         
         self.bind("<Button-1>", self.action)
 
-    def findBestMove(self):
+    def findBestMove(self , factor ):
 
     	o = Node(self.b)
-        bestMove = MTCS( 1500 , o, 0.707 )
+        bestMove = MTCS( 3000 , o, factor )
         self.b = copy.deepcopy( bestMove.state )
 
         for i in range(6):
@@ -299,7 +298,7 @@ class Terrain(Canvas):
         # Computer Action 	
         if not self.winner:
 
-        	self.findBestMove()
+        	self.findBestMove(0.8)
 
         	ok = True
 
