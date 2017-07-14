@@ -144,7 +144,10 @@ def MTCS( maxIter , root , factor ):
 		front, turn = treePolicy( root , 1 , factor )
 		reward = defaultPolicy(front.state, turn)
 		backup(front,reward)
-	return BestChild(root,0)
+
+	ans = bestChild(root,0)
+	print [(c.reward/c.visits) for c in ans.parent.children ]
+	return ans
 
 
 def treePolicy( node, turn , factor ):
@@ -152,7 +155,7 @@ def treePolicy( node, turn , factor ):
 		if ( node.fully_explored() == False ):
 			return expand(node, turn), -turn
 		else:
-			node = BestChild ( node , factor )
+			node = bestChild ( node , factor )
 			turn *= -1
 	return node, turn
 
@@ -170,27 +173,27 @@ def expand( node, turn ):
 	node.addChild(new_state,move)
 	return node.children[-1]
 
-def BestChild(node,factor):
+def bestChild(node,factor):
 	bestscore = -10000000.0
-	bestchildren = []
+	bestChildren = []
 	for c in node.children:
 		exploit = c.reward / c.visits
 		explore = math.sqrt(math.log(2.0*node.visits)/float(c.visits))
 		score = exploit + factor*explore
 		if score == bestscore:
-			bestchildren.append(c)
+			bestChildren.append(c)
 		if score > bestscore:
-			bestchildren = [c]
+			bestChildren = [c]
 			bestscore = score 
-	return random.choice(bestchildren)
+	return random.choice(bestChildren)
 
 def defaultPolicy( state, turn  ):
 	while state.terminal()==False and state.winner() == 0 :
 		state = state.next_state( turn )
 		turn *= -1
-	return state.winner()
+	return  state.winner() 
 
-def backup( node , reward ):
+def backup( node , reward):
 	while node != None:
 		node.visits += 1 
 		node.reward += reward
@@ -298,8 +301,8 @@ class Terrain(Canvas):
         # Computer Action 	
         if not self.winner:
 
-        	self.findBestMove(0.8)
-
+        	#self.findBestMove(1.0/math.sqrt(2.0))
+        	self.findBestMove(math.sqrt(2.0))
         	ok = True
 
         	if ok:
