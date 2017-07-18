@@ -143,7 +143,7 @@ def MTCS( maxIter , root , factor ):
 	for inter in range(maxIter):
 		front, turn = treePolicy( root , 1 , factor )
 		reward = defaultPolicy(front.state, turn)
-		backup(front,reward)
+		backup(front,reward,turn)
 
 	ans = bestChild(root,0)
 	print [(c.reward/c.visits) for c in ans.parent.children ]
@@ -193,11 +193,12 @@ def defaultPolicy( state, turn  ):
 		turn *= -1
 	return  state.winner() 
 
-def backup( node , reward):
+def backup( node , reward, turn ):
 	while node != None:
 		node.visits += 1 
-		node.reward += reward
+		node.reward -= turn*reward
 		node = node.parent
+		turn *= -1
 	return
 
 ## GUI Configuration
@@ -302,7 +303,7 @@ class Terrain(Canvas):
         if not self.winner:
 
         	#self.findBestMove(1.0/math.sqrt(2.0))
-        	self.findBestMove(math.sqrt(2.0))
+        	self.findBestMove(2.0)
         	ok = True
 
         	if ok:
