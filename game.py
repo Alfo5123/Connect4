@@ -299,6 +299,8 @@ class Terrain(Canvas):
             	info.t.config(text="Draw")
             	self.winner = True 
 
+        self.update()
+
         # Computer Action 	
         if not self.winner:
 
