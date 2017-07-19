@@ -31,18 +31,14 @@ class Board(object):
     	return len(self.board)-1
 
     def terminal(self):
-       # Returns true when the game is finished
-        empty = 0 
-        for i in range(len(self.board)):
-       	  for j in range(len(self.board[0])):
-       		if ( self.board[i][j] == 0 ):
-       			empty = empty + 1 
-        return empty==0
+       # Returns true when the game is finished, otherwise false.
+        for i in range(len(self.board[0])):
+       		if ( self.board[0][i] == 0 ):
+       			return False
+        return True
 
     def legal_moves(self):
-        # Takes a sequence of game states representing the full
-        # game history, and returns the full list of moves that
-        # are legal plays for the current player.
+        # Returns the full list of legal moves that for next player.
         legal = []
         for i in range(len(self.board[0])):
         	if( self.board[0][i] == 0 ):
@@ -51,6 +47,7 @@ class Board(object):
         return legal
 
     def next_state(self,turn):
+    	#Returns 
 		aux = copy.deepcopy ( self ) 
 		moves = aux.legal_moves()
 		if len(moves)>0:
@@ -61,8 +58,8 @@ class Board(object):
 
     def winner(self):
         # Takes the board as input and determines if there is a winner.
-        # If the game is now won, return the player number (Computer = 1, Human = -1).
-        # If the game is still ongoing, return zero.  
+        # If the game has a winner, it returns the player number (Computer = 1, Human = -1).
+        # If the game is still ongoing, it returns zero.  
 	    i = 0
 	    while(i < len(self.board)):
 	        j = 0
@@ -114,9 +111,8 @@ class Board(object):
 
 ## Monte Carlo Tree Search
 
-# Data structure to keep track of our search
 class Node():
-
+# Data structure to keep track of our search
 	def __init__(self, state, parent = None):
 		self.visits = 1 
 		self.reward = 0.0
@@ -256,7 +252,7 @@ class Terrain(Canvas):
         self.bind("<Button-1>", self.action)
 
     def findBestMove(self , factor ):
-
+    # Returns the best move using MonteCarlo Tree Search
     	o = Node(self.b)
         bestMove = MTCS( 3000 , o, factor )
         self.b = copy.deepcopy( bestMove.state )
