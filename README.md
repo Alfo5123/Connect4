@@ -17,6 +17,12 @@ It must be noted that this is a solved game (the first player can always win wit
 
 Monte Carlo Tree Search is a recently proposed algorithm that combines 
 
+Here we attach some of papers as part of the literature revised for developing this project:
+- **[A Survey of Monte Carlo Tree Search Methods](http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=B7BB1338BDE1F287ECFC52AD86AFD055?doi=10.1.1.297.3086&rep=rep1&type=pdf)**
+- **[Monte-Carlo Tree Search and Minimax Hybrids](https://dke.maastrichtuniversity.nl/m.winands/documents/paper%2049.pdf)**
+- **[Score Bounded Monte-Carlo Tree Search](https://pdfs.semanticscholar.org/d2c4/8b5d3fe77521bf0b0b0ec5f0b43e6b5f9723.pdf)**
+- **[On the Dangers of Random Playouts](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.297.4379&rep=rep1&type=pdf)**
+
 ## Running the game
 
 ### Prerequisites
