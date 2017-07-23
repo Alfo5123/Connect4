@@ -1,6 +1,10 @@
 # Connect4
 Monte Carlo Tree Search Based AI Connect 4 Bot
 
+<p align="center">
+  <img src="https://github.com/Alfo5123/Connect4/blob/master/img/game_example.gif" width="350"/>  
+</p>
+
 ## Getting Started
 
 ### About the game
