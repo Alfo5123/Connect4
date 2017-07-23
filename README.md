@@ -9,13 +9,13 @@ Monte Carlo Tree Search Based AI Connect 4 Bot
 
 ### About the game
 
-Connect 4 is a two-player game in which the players first choose a color and then take turns dropping colored discs from the top into a seven-column, six-row vertically suspended grid. The pieces fall straight down, occupying the next available space within the column. The objective of the game is to be the first to form a horizontal, vertical, or diagonal line of four of one's own discs.
+Connect 4 is a two-player game in which the players take turns dropping colored discs from the top into a seven-column, six-row vertically suspended grid. The pieces fall straight down, occupying the next available space within the column. The objective of the game is to be the first to form a horizontal, vertical, or diagonal line of four of one's own discs.
 
 It must be noted that this is a solved game (the first player can always win with *right* moves), the purpose of this project is mianly to implement the algorithm and test its performance in a simple game. We encourage users to find those *right* moves!
 
 ### The algorithm
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+Monte Carlo Tree Search is a recently proposed algorithm that combines 
 
 ## Running the game
 
