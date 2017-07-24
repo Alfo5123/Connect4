@@ -16,7 +16,7 @@ It must be noted that this is a solved game (the first player can always win wit
 ### The algorithm
 
 Monte Carlo Tree Search is a recently proposed search method that combines the precision of tree search with the
-generality of random sampling. 
+generality of random sampling. It does not depend on heuristic function to evaluate the best next move to make, rather it just considers the game mechanics to play random rollouts and get an expected reward after a fixed number of iterations. 
 
 Here we attach some of papers as part of the literature revised for developing this project:
 - **[A Survey of Monte Carlo Tree Search Methods](http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=B7BB1338BDE1F287ECFC52AD86AFD055?doi=10.1.1.297.3086&rep=rep1&type=pdf)**
