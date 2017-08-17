@@ -10,12 +10,15 @@ import math
 import copy
 import time
 
+dx = [ 1, 1,  1,  0 ]
+dy = [ 1, 0,  -1,  1  ]
 
 ## Game basic dynamics
 class Board(object):
 	
-    def __init__(self, board ):
+    def __init__(self, board , last_move = [ None , None ] ):
     	self.board = board 
+    	self.last_move = last_move
 
     def tryMove(self, move):
     	# Takes the current board and a possible move specified 
@@ -54,59 +57,56 @@ class Board(object):
 			ind = random.randint(0,len(moves)-1)
 			row = aux.tryMove(moves[ind])
 			aux.board[row][moves[ind]] = turn
+			aux.last_move = [ row , moves[ind] ] 
 		return aux
 
     def winner(self):
         # Takes the board as input and determines if there is a winner.
         # If the game has a winner, it returns the player number (Computer = 1, Human = -1).
         # If the game is still ongoing, it returns zero.  
-	    i = 0
-	    while(i < len(self.board)):
-	        j = 0
-	        while(j < 4):
-	            if(self.board[i][j]== self.board[i][j+1] == self.board[i][j+2] == self.board[i][j+3] == 1):
-	                return 1
-	            elif(self.board[i][j] == self.board[i][j+1] == self.board[i][j+2] == self.board[i][j+3] == -1):
-	                return -1
-	            j +=1
-	        i += 1
 
+        x = self.last_move[0]
+        y = self.last_move[1]
 
-	    i = 0
-	    while(i < 3):
-	        j = 0
-	        while(j < len(self.board[i])):
-	            if(self.board[i][j] == self.board[i+1][j] == self.board[i+2][j] == self.board[i+3][j] == 1):
-	                return 1
-	            elif(self.board[i][j] == self.board[i+1][j] == self.board[i+2][j] == self.board[i+3][j] == -1):
-	                return -1
-	            j+=1
-	        i+=1
+        if x == None:
+        	return 0 
 
+        for d in range(4):
 
-	    i = 0
-	    while(i < 3):
-	        j = 0
-	        while(j < 4):
-	            if(self.board[i][j] == self.board[i+1][j+1] == self.board[i+2][j+2] == self.board[i+3][j+3] == 1):
-	                return 1
-	            elif(self.board[i][j] == self.board[i+1][j+1] == self.board[i+2][j+2] == self.board[i+3][j+3] == -1):
-	                return -1
-	            j += 1
-	        i += 1
-	                    
-	    i = 0
-	    while(i < 3):
-	        j = len(self.board[i])-1
-	        while(j > len(self.board)-4):
-	            if(self.board[i][j] == self.board[i+1][j-1] == self.board[i+2][j-2] == self.board[i+3][j-3] == 1):
-	                return 1
-	            elif(self.board[i][j] == self.board[i+1][j-1] == self.board[i+2][j-2] == self.board[i+3][j-3] == -1):
-	                return -1
-	            j -= 1
-	        i += 1
+        	h_counter = 0
+        	c_counter = 0
 
-	    return 0
+        	u = x - 3*dx[d]
+        	v = y - 3*dy[d]
+
+        	for k in range(-3,4):
+
+        		u = x + k * dx[d]
+        		v = y + k * dy[d]
+
+        		if u < 0 or u >= 6:
+        			continue
+
+        		if v < 0 or v >= 7:
+        			continue
+
+        		if self.board[u][v] == -1:
+        			c_counter = 0
+        			h_counter += 1
+        		elif self.board[u][v] == 1:
+        			h_counter = 0
+        			c_counter += 1
+        		else:
+        			h_counter = 0
+        			c_counter = 0
+
+        		if h_counter == 4:
+        			return -1 
+
+        		if c_counter == 4:
+        			return 1
+
+        return 0
 
 
 ## Monte Carlo Tree Search
@@ -164,6 +164,7 @@ def expand( node, turn ):
 			row = node.state.tryMove(move)
 			new_state = copy.deepcopy(node.state)
 			new_state.board[row][move] = turn 
+			new_state.last_move = [ row , move ]
 			break
 
 	node.addChild(new_state,move)
