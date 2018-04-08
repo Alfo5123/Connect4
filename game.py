@@ -242,6 +242,7 @@ class Terrain(Canvas):
         	board.append(row)
 
         self.b = Board( board )
+        self.last_bstate = self.b
         
         for i in range(0, 340, int(400/6)):
             spots = []
@@ -252,20 +253,45 @@ class Terrain(Canvas):
         
         self.bind("<Button-1>", self.action)
 
+    def reloadBoard(self, i=None, j=None, val=None, bstate=None):
+        """
+        Reloads the board colors and content.
+        Uses recursive upload for more complex cases (e.g. step back).
+        [i,j,val] or [bstate] can be provided (but not simpultaneously).
+        If no i, j, values or bstate are provided, it updates only colors.
+        I bstate is present, updates the board values first and then colors.
+        If i and j is present but no val, then updates the color of only one cell.
+        If i and j and val are present, updates the matrix and the color.
+        """
+        if i==None:
+            if bstate!=None:
+                self.b = copy.deepcopy(bstate)
+            for i in range(6):
+                for j in range(7):
+                    self.reloadBoard(i, j, val=None, bstate=None)
+        elif val==None:
+            if self.b.board[i][j] == -1:
+                self.p[i][j].setColor("yellow")
+            elif self.b.board[i][j] == 1:
+                self.p[i][j].setColor("red")
+            elif self.b.board[i][j] == 0:
+                self.p[i][j].setColor("white")
+        else:
+            self.b.board[i][j] = val
+            self.reloadBoard(i, j)
+
     def findBestMove(self , factor ):
     # Returns the best move using MonteCarlo Tree Search
     	o = Node(self.b)
         bestMove = MTCS( 3000 , o, factor )
         self.b = copy.deepcopy( bestMove.state )
 
-        for i in range(6):
-        	for j in range(7):
-        		if self.b.board[i][j] == -1:
-        			self.p[i][j].setColor("yellow")
-        		elif self.b.board[i][j] == 1:
-        			self.p[i][j].setColor("red")
+        self.reloadBoard()
+
 
     def action(self, event):
+
+        self.last_bstate = copy.deepcopy(self.b)
 
     	# Human Action
         if not self.winner:
@@ -276,8 +302,7 @@ class Terrain(Canvas):
             if row == -1:
             	return 
             else:
-            	self.p[row][col].setColor("yellow")
-                self.b.board[row][col] = -1
+                self.reloadBoard(row, col, -1)
             	ok = True
 
             if ok:
@@ -294,7 +319,7 @@ class Terrain(Canvas):
             	self.winner = True
             elif self.b.terminal():
             	info.t.config(text="Draw")
-            	self.winner = True 
+            	self.winner = True
 
         self.update()
 
@@ -315,11 +340,19 @@ class Terrain(Canvas):
         		self.winner = True
         	elif result == -1:
         		info.t.config(text="You won!")
-        		self.winner = 1
+        		self.winner = True
         	elif self.b.terminal():
         		info.t.config(text="Draw")
         		self.winner = True
 
+    def step_back(self):
+        """
+        Single human and computer step back
+        """
+        self.winner = False
+        info.t.config(text="Your turn")
+        self.reloadBoard(bstate=self.last_bstate)
+        self.update()
 
 
 if __name__ == "__main__":
@@ -348,10 +381,16 @@ if __name__ == "__main__":
 	    t = Terrain(root)
 	    t.grid(row=1, column=0)
 
+
+	def step_back():
+		global t
+		t.step_back()
+
 	def close():
 		root.destroy()
 
-	Button(root, text="Try again (?)", command=restart).grid(row=2, column=0, pady=15)
-	Button(root, text = "Exit", command = close).grid(row=3,column = 0, pady = 5)
+	Button(root, text="Try again (?)", command=restart).grid(row=3, column=0, pady=5)
+	Button(root, text="Step back", command=step_back).grid(row=2, column=0, pady=2)
+	Button(root, text = "Exit", command = close).grid(row=4,column = 0, pady = 2)
 
 	root.mainloop()
