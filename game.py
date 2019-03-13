@@ -49,16 +49,16 @@ class Board(object):
 
         return legal
 
-    def next_state(self,turn):
-    	#Returns 
-		aux = copy.deepcopy ( self ) 
-		moves = aux.legal_moves()
-		if len(moves)>0:
-			ind = random.randint(0,len(moves)-1)
-			row = aux.tryMove(moves[ind])
-			aux.board[row][moves[ind]] = turn
-			aux.last_move = [ row , moves[ind] ] 
-		return aux
+    def next_state(self, turn):
+        # Retuns next state
+        aux = copy.deepcopy(self)
+        moves = aux.legal_moves()
+        if len(moves) > 0 :
+            ind = random.randint(0,len(moves)-1)
+            row = aux.tryMove(moves[ind])
+            aux.board[row][moves[ind]] = turn
+            aux.last_move = [ row, moves[ind] ]
+        return aux 
 
     def winner(self):
         # Takes the board as input and determines if there is a winner.
@@ -75,9 +75,6 @@ class Board(object):
 
         	h_counter = 0
         	c_counter = 0
-
-        	u = x - 3*dx[d]
-        	v = y - 3*dy[d]
 
         	for k in range(-3,4):
 
@@ -103,7 +100,7 @@ class Board(object):
         		if h_counter == 4:
         			return -1 
 
-        		if c_counter == 4:
+        		if c_counter == 4:	
         			return 1
 
         return 0
@@ -283,7 +280,7 @@ class Terrain(Canvas):
     def findBestMove(self , factor ):
     # Returns the best move using MonteCarlo Tree Search
     	o = Node(self.b)
-        bestMove = MTCS( 3000 , o, factor )
+        bestMove = MTCS( 3000, o, factor )
         self.b = copy.deepcopy( bestMove.state )
 
         self.reloadBoard()
@@ -303,6 +300,7 @@ class Terrain(Canvas):
             	return 
             else:
                 self.reloadBoard(row, col, -1)
+		self.b.last_move = [ row, col ]
             	ok = True
 
             if ok:
@@ -344,6 +342,8 @@ class Terrain(Canvas):
         	elif self.b.terminal():
         		info.t.config(text="Draw")
         		self.winner = True
+
+        self.update()
 
     def step_back(self):
         """
